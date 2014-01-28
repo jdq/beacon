@@ -7,11 +7,18 @@ from beacon import AddressReader
 logger = logging.getLogger('SnmpAddressReader')
 
 class SnmpAddressReader(AddressReader):
-
     def __init__(self):
         self.host = 'localhost'
         self.port = 161
         self.password = 'public'
+
+    def configure(self, dict):
+        if 'host' in dict:
+            self.host = dict['host']
+        if 'port' in dict:
+            self.port = dict['port']
+        if 'password' in dict:
+            self.password = dict['password']
 
     def get_addresses(self):
         cmdGen = cmdgen.CommandGenerator()

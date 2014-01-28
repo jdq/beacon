@@ -1,3 +1,4 @@
+import ConfigParser
 import unittest
 
 from snmp_address_reader import SnmpAddressReader
@@ -6,7 +7,10 @@ class SnmpAddressReaderTest(unittest.TestCase):
 
 	def setUp(self):
 		self.reader = SnmpAddressReader()
-		self.reader.host = '192.168.100.1'
+
+		config = ConfigParser.ConfigParser()
+		config.readfp(open('beacon.cfg'))
+		self.reader.configure(dict(config.items('SnmpAddressReader')))
 
 	def test_get_addresses(self):
 		addresses = self.reader.get_addresses()
