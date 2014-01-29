@@ -1,7 +1,7 @@
 import ConfigParser
 import unittest
 
-from snmp_address_reader import SnmpAddressReader
+from reader.snmp_address_reader import SnmpAddressReader
 
 class SnmpAddressReaderTest(unittest.TestCase):
 

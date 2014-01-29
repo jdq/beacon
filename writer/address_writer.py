@@ -1,7 +1,7 @@
 import abc
 
 class AddressWriter(object):
-	__metaclass__  = abc.ABCMeta
+	__metaclass__ = abc.ABCMeta
 	def configure(self, dict):
 		pass
 	@abc.abstractmethod

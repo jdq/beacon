@@ -1,7 +1,7 @@
 import ConfigParser
 import unittest
 
-from route53_address_writer import Route53AddressWriter
+from writer.route53_address_writer import Route53AddressWriter
 
 class Route53AddressWriterTest(unittest.TestCase):
 

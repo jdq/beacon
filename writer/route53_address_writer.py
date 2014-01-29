@@ -1,7 +1,7 @@
 import logging
 import route53
 
-from beacon import AddressWriter
+from writer.address_writer import AddressWriter
 
 logger = logging.getLogger('Route53Writer')
 

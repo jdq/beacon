@@ -2,7 +2,7 @@ import logging
 from pysnmp.entity.rfc3413.oneliner import cmdgen
 from pysnmp.proto.rfc1902 import IpAddress
 
-from beacon import AddressReader
+from reader.address_reader import AddressReader
 
 logger = logging.getLogger('SnmpAddressReader')
 
