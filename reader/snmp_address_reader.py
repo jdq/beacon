@@ -12,13 +12,13 @@ class SnmpAddressReader(AddressReader):
         self.port = 161
         self.password = 'public'
 
-    def configure(self, dict):
-        if 'host' in dict:
-            self.host = dict['host']
-        if 'port' in dict:
-            self.port = dict['port']
-        if 'password' in dict:
-            self.password = dict['password']
+    def configure(self, dictionary):
+        if 'host' in dictionary:
+            self.host = dictionary['host']
+        if 'port' in dictionary:
+            self.port = dictionary['port']
+        if 'password' in dictionary:
+            self.password = dictionary['password']
 
     def get_addresses(self):
         cmdGen = cmdgen.CommandGenerator()
@@ -33,20 +33,19 @@ class SnmpAddressReader(AddressReader):
 
         results = []
         if errorIndication:
-            logger.error('%s' % errorIndication)
+            logger.error('%s', errorIndication)
         else:
             if errorStatus:
-                logger.error('%s at %s' % (
+                logger.error('%s at %s',
                     errorStatus.prettyPrint(),
                     errorIndex and varBindTable[-1][int(errorIndex) - 1] or '?'
                 )
-            )
             else:
                 for varBindTableRow in varBindTable:
                     for name, val in varBindTableRow:
                         if isinstance(val, IpAddress):
-                            logger.debug('%s = %s' % (name.prettyPrint(),
-                                    val.prettyPrint()))
+                            logger.debug('%s = %s', name.prettyPrint(),
+                                    val.prettyPrint())
                             results.append(val.prettyPrint())
         return results
 
