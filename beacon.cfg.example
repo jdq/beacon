@@ -1,0 +1,15 @@
+[main]
+#reader = SnmpAddressReader
+#writer = Route53AddressWriter
+#hostname = www.example.com
+
+[SnmpAddressReader]
+#host = localhost
+#port = 161
+#password = public
+
+[Route53AddressWriter]
+#access_key_id = secret
+#secret_access_key = secret
+#zone_id = secret # example.com
+
