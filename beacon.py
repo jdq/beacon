@@ -24,11 +24,18 @@ class Beacon(object):
     def __init__(self):
         self.reader = None
         self.writer = None
+        self.hostname = None
         # TODO: this can be improved
         self.rfc1918_addresses = ['10.',
                         '192.168.']
 
     def configure(self, config):
+        name = 'main'
+        if config.has_section(name):
+            if config.has_option(name, 'hostname'):
+                self.hostname = config.get(name, 'hostname')
+                logger.debug("hostname = %s", self.hostname)
+
         self.reader = SnmpAddressReader()
         name = self.reader.__class__.__name__
         logger.debug("reader class = %s", name)
@@ -54,14 +61,14 @@ class Beacon(object):
 
     def run(self, argv):
         progname = os.path.basename(argv[0])
-        cfgfilename = DEFAULT_CONFIG_FILENAME
 
         parser = OptionParser()
         parser.add_option("--verbose", "-v", dest="verbose",
                         action="store_true", default=False)
-        parser.add_option("-c", dest="cfgfilename", default=cfgfilename)
+        parser.add_option("-c", dest="cfgfilename",
+                        default=DEFAULT_CONFIG_FILENAME)
         options, args = parser.parse_args()
-        argslength = len(args)
+        #argslength = len(args)
 
         logformat = '%(asctime)s %(levelname)-8s %(message)s'
         logging.basicConfig(format=progname + ": " + logformat)
@@ -69,6 +76,7 @@ class Beacon(object):
         logging.getLogger().setLevel(logging.INFO)
         if options.verbose:
             logging.getLogger().setLevel(logging.DEBUG)
+        cfgfilename = options.cfgfilename
 
         config = ConfigParser.ConfigParser()
         try:
@@ -81,6 +89,9 @@ class Beacon(object):
 
         address = self.get_external_address()
         logger.debug("address = %s", address)
+
+        self.writer.update_addresses(self.hostname, [address])
+
         return 0
 
 def add_logging_file_handler(filename, logformat, loglevel=logging.INFO):

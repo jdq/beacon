@@ -15,8 +15,10 @@ class SnmpAddressReader(AddressReader):
     def configure(self, dictionary):
         if 'host' in dictionary:
             self.host = dictionary['host']
+        logger.debug("snmp host = %s", self.host)
         if 'port' in dictionary:
             self.port = dictionary['port']
+        logger.debug("snmp port = %s", self.port)
         if 'password' in dictionary:
             self.password = dictionary['password']
 

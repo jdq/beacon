@@ -5,5 +5,5 @@ class AddressWriter(object):
     def configure(self, dictionary):
         pass
     @abc.abstractmethod
-    def update_addresses(self, addresses):
+    def update_addresses(self, hostname, addresses):
         pass
