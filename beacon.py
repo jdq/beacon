@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
 import ConfigParser
+import dns.resolver
+from dns.resolver import NXDOMAIN
 import logging
 from logging.handlers import RotatingFileHandler
 from optparse import OptionParser
@@ -13,12 +15,6 @@ from writer.route53_address_writer import Route53AddressWriter
 logger = logging.getLogger('beacon')
 
 DEFAULT_CONFIG_FILENAME = 'beacon.cfg'
-
-class BeaconError(Exception):
-    def __init__(self, value):
-        self.value = value
-    def __str__(self):
-        return repr(self.value)
 
 class Beacon(object):
     def __init__(self):
@@ -48,6 +44,14 @@ class Beacon(object):
         if config.has_section(name):
             self.writer.configure(dict(config.items(name)))
 
+    def resolve_hostname(self):
+        try:
+            answers = dns.resolver.query(self.hostname, 'A')
+            for rdata in answers:
+                logger.info("current DNS record: %s", rdata)
+        except NXDOMAIN:
+            logger.info("DNS record not found")
+
     def get_external_address(self):
         addresses = self.reader.get_addresses()
         for address in addresses:
@@ -67,17 +71,22 @@ class Beacon(object):
                         action="store_true", default=False)
         parser.add_option("-c", dest="cfgfilename",
                         default=DEFAULT_CONFIG_FILENAME)
+        parser.add_option("-l", dest="logfilename")
         options, args = parser.parse_args()
         #argslength = len(args)
 
         logformat = '%(asctime)s %(levelname)-8s %(message)s'
-        logging.basicConfig(format=progname + ": " + logformat)
+        if options.logfilename:
+            add_logging_file_handler(options.logfilename, logformat,
+                    logging.DEBUG)
+        else:
+            logging.basicConfig(format=progname + ": " + logformat)
 
         logging.getLogger().setLevel(logging.INFO)
         if options.verbose:
             logging.getLogger().setLevel(logging.DEBUG)
-        cfgfilename = options.cfgfilename
 
+        cfgfilename = options.cfgfilename
         config = ConfigParser.ConfigParser()
         try:
             config.readfp(open(cfgfilename))
@@ -87,6 +96,8 @@ class Beacon(object):
 
         self.configure(config)
 
+        self.resolve_hostname()
+
         address = self.get_external_address()
         logger.debug("address = %s", address)
 
@@ -95,13 +106,20 @@ class Beacon(object):
         return 0
 
 def add_logging_file_handler(filename, logformat, loglevel=logging.INFO):
-    fileHandler = RotatingFileHandler(filename,
+    file_handler = RotatingFileHandler(filename,
                     maxBytes=10 * 1024 * 1024, backupCount=3)
-    fileHandler.setFormatter(logging.Formatter(logformat))
-    fileHandler.setLevel(loglevel)
-    logging.getLogger().addHandler(fileHandler)
-    return fileHandler
+    file_handler.setFormatter(logging.Formatter(logformat))
+    file_handler.setLevel(loglevel)
+    logging.getLogger().addHandler(file_handler)
+    return file_handler
 
 if __name__ == '__main__':
-    beacon = Beacon()
-    sys.exit(beacon.run(sys.argv))
+    n = 0
+    try:
+        beacon = Beacon()
+        n = beacon.run(sys.argv)
+    except:
+        logger.exception("unexpected error")
+        n = 1
+    sys.exit(n)
+

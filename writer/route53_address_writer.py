@@ -2,6 +2,7 @@ import logging
 import route53
 
 from writer.address_writer import AddressWriter
+from beacon_error import BeaconError
 
 logger = logging.getLogger('Route53Writer')
 
@@ -34,18 +35,16 @@ class Route53AddressWriter(AddressWriter):
             if record_set.name == name:
                 logger.debug("matched record set = %s", record_set)
                 return record_set
-        logger.error("name not found in zone")
-        return None
+        logger.error("name %s not found in zone %s", name, zone.name)
+        raise BeaconError("name %s not found in zone %s" % (name, zone.name))
 
     def update_addresses(self, hostname, addresses):
         record_set = self.get_record_set(hostname)
-        if not record_set:
-            pass # XXX
         logger.debug("record set values = %s", record_set.records)
         if set(record_set.records) == set(addresses):
-            logger.info("no update required")
+            logger.debug("no update required")
         else:
-            logger.info("updating record set")
+            logger.debug("updating record set")
             record_set.records = addresses
             record_set.save()
 
