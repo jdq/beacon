@@ -46,14 +46,14 @@ class Beacon(object):
 
     def resolve_hostname(self):
         try:
+            logger.info("attempting to resolve %s", self.hostname)
             answers = dns.resolver.query(self.hostname, 'A')
             for rdata in answers:
                 logger.info("current DNS record: %s", rdata)
         except NXDOMAIN:
             logger.info("DNS record not found")
 
-    def get_external_address(self):
-        addresses = self.reader.get_addresses()
+    def get_external_address(self, addresses):
         for address in addresses:
             if address == "127.0.0.1":
                 continue
@@ -73,8 +73,9 @@ class Beacon(object):
                         default=DEFAULT_CONFIG_FILENAME)
         parser.add_option("-l", dest="logfilename")
         options, args = parser.parse_args()
-        #argslength = len(args)
+        argslength = len(args)
 
+        # log to file or using basicConfig
         logformat = '%(asctime)s %(levelname)-8s %(message)s'
         if options.logfilename:
             add_logging_file_handler(options.logfilename, logformat,
@@ -82,9 +83,12 @@ class Beacon(object):
         else:
             logging.basicConfig(format=progname + ": " + logformat)
 
-        logging.getLogger().setLevel(logging.INFO)
         if options.verbose:
             logging.getLogger().setLevel(logging.DEBUG)
+        else:
+            logging.getLogger().setLevel(logging.INFO)
+
+        logger.info("starting")
 
         cfgfilename = options.cfgfilename
         config = ConfigParser.ConfigParser()
@@ -98,11 +102,12 @@ class Beacon(object):
 
         self.resolve_hostname()
 
-        address = self.get_external_address()
-        logger.debug("address = %s", address)
-
+        addresses = self.reader.get_addresses()
+        address = self.get_external_address(addresses)
+        logger.debug("address obtained from reader = %s", address)
         self.writer.update_addresses(self.hostname, [address])
 
+        logger.info("execution complete")
         return 0
 
 def add_logging_file_handler(filename, logformat, loglevel=logging.INFO):
