@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 
-import ConfigParser
+import configparser
 import dns.resolver
 from dns.resolver import NXDOMAIN
+import ipaddress
 import logging
 from logging.handlers import RotatingFileHandler
 from optparse import OptionParser
@@ -47,7 +48,7 @@ class Beacon(object):
     def resolve_hostname(self):
         try:
             logger.info("attempting to resolve %s", self.hostname)
-            answers = dns.resolver.query(self.hostname, 'A')
+            answers = dns.resolver.resolve(self.hostname)
             for rdata in answers:
                 logger.info("current DNS record: %s", rdata)
         except NXDOMAIN:
@@ -55,11 +56,13 @@ class Beacon(object):
 
     def get_external_address(self, addresses):
         for address in addresses:
-            if address == "127.0.0.1":
+            a = ipaddress.ip_address(address)
+            if a.is_loopback:
                 continue
-            for a in self.rfc1918_addresses:
-                if address.startswith(a):
-                    continue
+            if a.is_link_local:
+                continue
+            if a.is_private:
+                continue
             return address
         return None
 
@@ -91,9 +94,9 @@ class Beacon(object):
         logger.info("starting")
 
         cfgfilename = options.cfgfilename
-        config = ConfigParser.ConfigParser()
+        config = configparser.ConfigParser()
         try:
-            config.readfp(open(cfgfilename))
+            config.read_file(open(cfgfilename))
         except IOError:
             sys.stderr.write("unable to open configuration: %s\n" % cfgfilename)
             return 2
@@ -103,8 +106,9 @@ class Beacon(object):
         self.resolve_hostname()
 
         addresses = self.reader.get_addresses()
+        logger.debug("addresses obtained from reader = %s", addresses)
         address = self.get_external_address(addresses)
-        logger.debug("address obtained from reader = %s", address)
+        logger.debug("external address obtained from reader = %s", address)
         self.writer.update_addresses(self.hostname, [address])
 
         logger.info("execution complete")
