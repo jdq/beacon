@@ -13,24 +13,22 @@ import sys
 from reader.snmp_address_reader import SnmpAddressReader
 from writer.route53_address_writer import Route53AddressWriter
 
-logger = logging.getLogger('beacon')
+logger = logging.getLogger("beacon")
 
-DEFAULT_CONFIG_FILENAME = 'beacon.cfg'
+DEFAULT_CONFIG_FILENAME = "beacon.cfg"
+
 
 class Beacon(object):
     def __init__(self):
         self.reader = None
         self.writer = None
         self.hostname = None
-        # TODO: this can be improved
-        self.rfc1918_addresses = ['10.',
-                        '192.168.']
 
     def configure(self, config):
-        name = 'main'
+        name = "main"
         if config.has_section(name):
-            if config.has_option(name, 'hostname'):
-                self.hostname = config.get(name, 'hostname')
+            if config.has_option(name, "hostname"):
+                self.hostname = config.get(name, "hostname")
                 logger.debug("hostname = %s", self.hostname)
 
         self.reader = SnmpAddressReader()
@@ -70,19 +68,18 @@ class Beacon(object):
         progname = os.path.basename(argv[0])
 
         parser = OptionParser()
-        parser.add_option("--verbose", "-v", dest="verbose",
-                        action="store_true", default=False)
-        parser.add_option("-c", dest="cfgfilename",
-                        default=DEFAULT_CONFIG_FILENAME)
+        parser.add_option(
+            "--verbose", "-v", dest="verbose", action="store_true", default=False
+        )
+        parser.add_option("-c", dest="cfgfilename", default=DEFAULT_CONFIG_FILENAME)
         parser.add_option("-l", dest="logfilename")
         options, args = parser.parse_args()
         argslength = len(args)
 
         # log to file or using basicConfig
-        logformat = '%(asctime)s %(levelname)-8s %(message)s'
+        logformat = "%(asctime)s %(levelname)-8s %(message)s"
         if options.logfilename:
-            add_logging_file_handler(options.logfilename, logformat,
-                    logging.DEBUG)
+            add_logging_file_handler(options.logfilename, logformat, logging.DEBUG)
         else:
             logging.basicConfig(format=progname + ": " + logformat)
 
@@ -114,15 +111,18 @@ class Beacon(object):
         logger.info("execution complete")
         return 0
 
+
 def add_logging_file_handler(filename, logformat, loglevel=logging.INFO):
-    file_handler = RotatingFileHandler(filename,
-                    maxBytes=10 * 1024 * 1024, backupCount=3)
+    file_handler = RotatingFileHandler(
+        filename, maxBytes=10 * 1024 * 1024, backupCount=3
+    )
     file_handler.setFormatter(logging.Formatter(logformat))
     file_handler.setLevel(loglevel)
     logging.getLogger().addHandler(file_handler)
     return file_handler
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     n = 0
     try:
         beacon = Beacon()
@@ -131,4 +131,3 @@ if __name__ == '__main__':
         logger.exception("unexpected error")
         n = 1
     sys.exit(n)
-

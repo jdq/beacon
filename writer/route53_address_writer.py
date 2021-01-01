@@ -4,7 +4,8 @@ import route53
 from writer.address_writer import AddressWriter
 from beacon_error import BeaconError
 
-logger = logging.getLogger('Route53Writer')
+logger = logging.getLogger("Route53Writer")
+
 
 class Route53AddressWriter(AddressWriter):
     def __init__(self):
@@ -14,17 +15,17 @@ class Route53AddressWriter(AddressWriter):
         self.conn = None
 
     def configure(self, dictionary):
-        if 'access_key_id' in dictionary:
-            self.aws_access_key_id = dictionary['access_key_id']
-        if 'secret_access_key' in dictionary:
-            self.aws_secret_access_key = dictionary['secret_access_key']
-        if 'zone_id' in dictionary:
-            self.zone_id = dictionary['zone_id']
+        if "access_key_id" in dictionary:
+            self.aws_access_key_id = dictionary["access_key_id"]
+        if "secret_access_key" in dictionary:
+            self.aws_secret_access_key = dictionary["secret_access_key"]
+        if "zone_id" in dictionary:
+            self.zone_id = dictionary["zone_id"]
             logger.debug("aws zone id = %s", self.zone_id)
 
         self.conn = route53.connect(
-                aws_access_key_id=self.aws_access_key_id,
-                aws_secret_access_key=self.aws_secret_access_key
+            aws_access_key_id=self.aws_access_key_id,
+            aws_secret_access_key=self.aws_secret_access_key,
         )
 
     def get_record_set(self, name):
@@ -47,4 +48,3 @@ class Route53AddressWriter(AddressWriter):
             logger.debug("updating record set")
             record_set.records = addresses
             record_set.save()
-
